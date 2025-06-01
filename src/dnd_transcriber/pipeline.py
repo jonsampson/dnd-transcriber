@@ -59,9 +59,7 @@ class D_DTranscriptionPipeline:
 
         # Step 4: Multi-pass processing is now handled per-segment in validation
         if use_multipass:
-            print(
-                "🔍 Multi-pass processing enabled (handled per-segment in validation)"
-            )
+            print("🔍 Multi-pass processing enabled (handled per-segment in validation)")
         else:
             print("⏭️  Multi-pass processing disabled")
 
