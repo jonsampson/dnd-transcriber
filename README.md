@@ -29,6 +29,11 @@ poetry install
 ollama pull mistral-nemo:12b-instruct-2407-fp16
 ```
 
+4. Install pre-commit hooks (optional but recommended):
+```bash
+poetry run pre-commit install
+```
+
 ## Configuration
 
 Copy `.env.example` to `.env` and customize:
@@ -38,7 +43,7 @@ Copy `.env.example` to `.env` and customize:
 WHISPERX_MODEL=large-v2
 WHISPERX_DEVICE=cuda
 
-# Ollama settings  
+# Ollama settings
 OLLAMA_MODEL_NAME=mistral-nemo:12b-instruct-2407-fp16
 OLLAMA_API_URL=http://localhost:11434
 

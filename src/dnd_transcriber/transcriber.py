@@ -62,6 +62,13 @@ class WhisperXTranscriber:
             )
             self.align_model = model_a
 
-        result = whisperx.align(result["segments"], self.align_model, metadata, audio, self.config.device, return_char_alignments=False)  # type: ignore
+        result = whisperx.align(
+            result["segments"],
+            self.align_model,
+            metadata,
+            audio,
+            self.config.device,
+            return_char_alignments=False,
+        )  # type: ignore
 
         return result  # type: ignore[no-any-return]

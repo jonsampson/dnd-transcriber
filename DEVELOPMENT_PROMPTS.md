@@ -49,7 +49,7 @@ Create time formatting utilities in src/dnd_transcriber/utils/time.py:
 
 Implement:
 - seconds_to_srt_time(seconds: float) -> str
-- seconds_to_readable(seconds: float) -> str  
+- seconds_to_readable(seconds: float) -> str
 - parse_timestamp(timestamp: str) -> float
 
 Simple conversions only. Keep under 40 lines.
@@ -208,7 +208,7 @@ Update src/dnd_transcriber/pipeline.py to add multi-pass support:
 
 Add to D&DTranscriptionPipeline:
 - reprocess_segments(indices: list, audio_path: Path) method
-- merge_transcriptions(original: dict, reprocessed: dict) method  
+- merge_transcriptions(original: dict, reprocessed: dict) method
 - integrate confidence analyzer
 - Update process_audio to optionally use multi-pass
 
