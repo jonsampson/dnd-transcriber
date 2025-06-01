@@ -1,3 +1,6 @@
+import json
+import sys
+
 import requests
 
 from .config import OllamaConfig
@@ -32,27 +35,46 @@ class TranscriptionValidator:
         # Build validation prompt
         prompt = self._build_prompt(text, context)
 
-        # Call Ollama API
+        # Call Ollama API with streaming
         try:
+            print(f"🤖 Validating: {text[:50]}...")
+            sys.stdout.flush()
+
             response = requests.post(
                 f"{self.config.api_url}/api/generate",
                 json={
                     "model": self.config.model_name,
                     "prompt": prompt,
                     "temperature": self.config.temperature,
-                    "stream": False,
+                    "stream": True,
                 },
-                timeout=30,
+                timeout=60,
+                stream=True,
             )
             response.raise_for_status()
 
-            result = response.json()
-            corrected_text = result.get("response", "").strip()
+            corrected_text = ""
+            print("   ", end="")
+
+            for line in response.iter_lines():
+                if line:
+                    try:
+                        chunk = json.loads(line.decode("utf-8"))
+                        if chunk.get("response"):
+                            token = chunk["response"]
+                            corrected_text += token
+                            print(token, end="", flush=True)
+                    except json.JSONDecodeError:
+                        continue
+
+            print()  # New line after streaming
+            corrected_text = corrected_text.strip()
 
             # Return corrected text or original if correction is empty
             return corrected_text if corrected_text else text
 
-        except (requests.RequestException, KeyError):
+        except (requests.RequestException, KeyError) as e:
+            print(f"   ⚠️  Validation failed: {e}")
             # Return original text if validation fails
             return text
 

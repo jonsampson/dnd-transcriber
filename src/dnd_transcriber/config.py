@@ -95,7 +95,7 @@ class PipelineConfig(BaseModel):
                 model_name=os.getenv("DEMUCS_MODEL", "htdemucs"),
                 device=os.getenv("DEMUCS_DEVICE", "cuda"),
                 segment_length=int(seg_len)
-                if (seg_len := os.getenv("DEMUCS_SEGMENT_LENGTH")) is not None
+                if (seg_len := os.getenv("DEMUCS_SEGMENT_LENGTH")) and seg_len.strip()
                 else None,
             ),
             output_format=os.getenv("OUTPUT_FORMAT", "json"),

@@ -45,8 +45,10 @@ class D_DTranscriptionPipeline:
         """
         # Step 1: Preprocess audio with Demucs (if not skipped)
         if skip_preprocessing:
+            print("⏭️  Skipping audio preprocessing")
             vocals_path = input_path
         else:
+            print("🎵 Separating vocals from background music...")
             vocals_path = self.preprocessor.separate_audio(input_path)
 
         # Step 2: Transcribe with WhisperX
@@ -57,11 +59,15 @@ class D_DTranscriptionPipeline:
 
         # Step 4: Multi-pass processing if enabled
         if use_multipass:
+            print("🔍 Analyzing segment confidence scores...")
             low_confidence_indices = identify_low_confidence_segments(
                 transcription_output.segments, threshold=0.6
             )
 
             if low_confidence_indices:
+                print(
+                    f"🔄 Reprocessing {len(low_confidence_indices)} low-confidence segments..."
+                )
                 reprocessed_result = self.reprocess_segments(
                     low_confidence_indices, vocals_path
                 )
@@ -69,8 +75,11 @@ class D_DTranscriptionPipeline:
                     whisperx_result, reprocessed_result
                 )
                 transcription_output = convert_whisperx_output(whisperx_result)
+            else:
+                print("✅ All segments have good confidence scores")
 
         # Step 5: Validate segments with low confidence
+        print("🔍 Identifying segments for LLM validation...")
         validated_segments = self._validate_segments(transcription_output.segments)
 
         # Step 6: Update transcription with validated segments
@@ -89,6 +98,7 @@ class D_DTranscriptionPipeline:
         context_windows = self.context_manager.create_windows(segments)
 
         validated_segments = []
+        validation_count = 0
 
         for i, (segment, context_before, context_after) in enumerate(context_windows):
             # Build context string
@@ -105,12 +115,19 @@ class D_DTranscriptionPipeline:
             )
 
             if should_validate:
+                validation_count += 1
+                print(f"📝 Segment {validation_count}: {i+1}/{len(segments)}")
                 corrected_text = self.validator.validate_segment(
                     segment.text, context_text.strip()
                 )
                 segment.text = corrected_text
 
             validated_segments.append(segment)
+
+        if validation_count == 0:
+            print("✅ No segments needed LLM validation")
+        else:
+            print(f"✅ Validated {validation_count} segments with LLM")
 
         return validated_segments
 

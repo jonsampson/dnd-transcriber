@@ -46,9 +46,11 @@ class WhisperXTranscriber:
             )
 
         # Load audio
+        print(f"🎤 Loading audio: {audio_path.name}")
         audio = whisperx.load_audio(str(audio_path))
 
         # Transcribe
+        print("🎯 Transcribing audio with WhisperX...")
         result = self.model.transcribe(audio, batch_size=16)  # type: ignore
 
         # Add audio duration to result
@@ -57,11 +59,13 @@ class WhisperXTranscriber:
 
         # Align whisper output
         if self.align_model is None:
+            print("📐 Loading alignment model...")
             model_a, metadata = whisperx.load_align_model(
                 language_code=result["language"], device=self.config.device
             )
             self.align_model = model_a
 
+        print("🔧 Aligning transcription segments...")
         result = whisperx.align(
             result["segments"],
             self.align_model,
