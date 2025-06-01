@@ -2,14 +2,14 @@
 
 __version__ = "0.1.0"
 
-from .pipeline import D_DTranscriptionPipeline
 from .config import PipelineConfig
-from .models import TranscriptionOutput, Segment, Speaker
+from .models import Segment, Speaker, TranscriptionOutput
+from .pipeline import D_DTranscriptionPipeline
 from .roster import CharacterRoster
 
 __all__ = [
     "D_DTranscriptionPipeline",
-    "PipelineConfig", 
+    "PipelineConfig",
     "TranscriptionOutput",
     "Segment",
     "Speaker",

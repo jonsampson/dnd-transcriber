@@ -1,7 +1,13 @@
-import pytest
 import tempfile
 from pathlib import Path
-from dnd_transcriber.config import PipelineConfig, WhisperXConfig, OllamaConfig, DemucsConfig
+
+import pytest
+from dnd_transcriber.config import (
+    DemucsConfig,
+    OllamaConfig,
+    PipelineConfig,
+    WhisperXConfig,
+)
 from dnd_transcriber.models import Segment
 
 

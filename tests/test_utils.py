@@ -1,26 +1,30 @@
-import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-from dnd_transcriber.utils.time import seconds_to_srt_time, seconds_to_readable, parse_timestamp
-from dnd_transcriber.utils.audio import validate_audio_format, get_audio_duration
-from dnd_transcriber.models import Segment, Speaker, TranscriptionOutput
+from unittest.mock import MagicMock, patch
+
+from dnd_transcriber.models import Segment, TranscriptionOutput
+from dnd_transcriber.utils.audio import get_audio_duration, validate_audio_format
+from dnd_transcriber.utils.time import (
+    parse_timestamp,
+    seconds_to_readable,
+    seconds_to_srt_time,
+)
 
 
 class TestTimeUtils:
     """Test time utility functions."""
-    
+
     def test_seconds_to_srt_time(self):
         """Test SRT timestamp conversion."""
         assert seconds_to_srt_time(3661.5) == "01:01:01,500"
         assert seconds_to_srt_time(0.123) == "00:00:00,123"
         assert seconds_to_srt_time(90.0) == "00:01:30,000"
-    
+
     def test_seconds_to_readable(self):
         """Test readable time format conversion."""
         assert seconds_to_readable(3661) == "1:01:01"
         assert seconds_to_readable(90) == "1:30"
         assert seconds_to_readable(45) == "0:45"
-    
+
     def test_parse_timestamp(self):
         """Test timestamp parsing."""
         assert parse_timestamp("1:30:45") == 5445.0
@@ -30,7 +34,7 @@ class TestTimeUtils:
 
 class TestAudioUtils:
     """Test audio utility functions."""
-    
+
     @patch('subprocess.run')
     @patch('pathlib.Path.exists')
     def test_validate_audio_format_valid(self, mock_exists, mock_run):
@@ -38,9 +42,9 @@ class TestAudioUtils:
         mock_exists.return_value = True
         mock_run.return_value = MagicMock()
         test_path = Path("test.wav")
-        
+
         assert validate_audio_format(test_path) is True
-    
+
     @patch('subprocess.run')
     def test_get_audio_duration(self, mock_run):
         """Test audio duration retrieval."""
@@ -51,7 +55,7 @@ class TestAudioUtils:
 
 class TestModels:
     """Test Pydantic model functionality."""
-    
+
     def test_segment_model(self):
         """Test Segment model creation and serialization."""
         segment = Segment(
@@ -63,12 +67,12 @@ class TestModels:
         )
         assert segment.text == "Test text"
         assert segment.end_time - segment.start_time == 5.0
-        
+
         # Test JSON serialization
         data = segment.model_dump()
         assert data["text"] == "Test text"
         assert data["confidence"] == 0.95
-    
+
     def test_transcription_output_model(self, sample_segments):
         """Test TranscriptionOutput model with segments."""
         output = TranscriptionOutput(

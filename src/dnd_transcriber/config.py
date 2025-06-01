@@ -1,7 +1,7 @@
 import os
-from typing import Optional
-from pydantic import BaseModel, Field, validator
+
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field, validator
 
 load_dotenv()
 
@@ -11,7 +11,7 @@ class WhisperXConfig(BaseModel):
     model: str = Field(default="large-v2", description="WhisperX model name")
     device: str = Field(default="cuda", description="Device to run on")
     compute_type: str = Field(default="float16", description="Compute precision")
-    language: Optional[str] = Field(default=None, description="Audio language")
+    language: str | None = Field(default=None, description="Audio language")
 
     @validator("device")
     def validate_device(cls, v):
@@ -40,7 +40,7 @@ class DemucsConfig(BaseModel):
     """Configuration for Demucs audio separation."""
     model_name: str = Field(default="htdemucs", description="Demucs model name")
     device: str = Field(default="cuda", description="Device to run on")
-    segment_length: Optional[int] = Field(default=None, description="Segment length in seconds")
+    segment_length: int | None = Field(default=None, description="Segment length in seconds")
 
     @validator("device")
     def validate_device(cls, v):

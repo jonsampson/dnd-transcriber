@@ -1,4 +1,5 @@
 import sys
+
 try:
     from .cli import cli
 except ImportError as e:
