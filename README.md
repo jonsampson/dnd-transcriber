@@ -1,5 +1,12 @@
 # D&D Transcriber
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Poetry](https://img.shields.io/badge/poetry-dependency%20management-blue.svg)](https://python-poetry.org/)
+[![Tests](https://github.com/jonsampson/dnd-transcriber/workflows/Tests/badge.svg)](https://github.com/jonsampson/dnd-transcriber/actions)
+[![codecov](https://codecov.io/gh/jonsampson/dnd-transcriber/branch/master/graph/badge.svg)](https://codecov.io/gh/jonsampson/dnd-transcriber)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A specialized transcription pipeline for D&D sessions that combines WhisperX transcription with LLM-based validation. The system separates audio from background music, transcribes multi-speaker sessions, and corrects character names and fantasy terminology using local Ollama models.
 
 ## Installation
