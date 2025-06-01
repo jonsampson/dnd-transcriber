@@ -16,22 +16,15 @@ def sample_config():
     """Sample pipeline configuration for testing."""
     return PipelineConfig(
         whisperx=WhisperXConfig(
-            model="base",
-            device="cpu",
-            compute_type="float16",
-            language="en"
+            model="base", device="cpu", compute_type="float16", language="en"
         ),
         ollama=OllamaConfig(
             model_name="mistral-nemo:12b-instruct-2407-fp16",
             api_url="http://localhost:11434",
-            temperature=0.1
+            temperature=0.1,
         ),
-        demucs=DemucsConfig(
-            model_name="htdemucs",
-            device="cpu",
-            segment_length=None
-        ),
-        output_format="json"
+        demucs=DemucsConfig(model_name="htdemucs", device="cpu", segment_length=None),
+        output_format="json",
     )
 
 
@@ -45,19 +38,19 @@ def sample_whisperx_output():
                 "speaker": "DM",
                 "start": 0.0,
                 "end": 3.5,
-                "confidence": 0.95
+                "confidence": 0.95,
             },
             {
                 "text": "I cast magic missile at the goblin.",
                 "speaker": "Player1",
                 "start": 4.0,
                 "end": 6.8,
-                "confidence": 0.87
-            }
+                "confidence": 0.87,
+            },
         ],
         "language": "en",
         "model": "large-v2",
-        "duration": 10.0
+        "duration": 10.0,
     }
 
 
@@ -70,15 +63,15 @@ def sample_segments():
             speaker="DM",
             start_time=0.0,
             end_time=3.5,
-            confidence=0.95
+            confidence=0.95,
         ),
         Segment(
             text="I cast magic missile at the goblin.",
             speaker="Player1",
             start_time=4.0,
             end_time=6.8,
-            confidence=0.87
-        )
+            confidence=0.87,
+        ),
     ]
 
 

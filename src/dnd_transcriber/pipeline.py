@@ -27,7 +27,12 @@ class D_DTranscriptionPipeline:
         self.validator = TranscriptionValidator(config.ollama, roster)
         self.context_manager = ContextWindowManager(window_size=5, overlap=1)
 
-    def process_audio(self, input_path: Path, use_multipass: bool = True, skip_preprocessing: bool = False) -> TranscriptionOutput:
+    def process_audio(
+        self,
+        input_path: Path,
+        use_multipass: bool = True,
+        skip_preprocessing: bool = False,
+    ) -> TranscriptionOutput:
         """Process audio file through complete transcription pipeline.
 
         Args:
@@ -57,8 +62,12 @@ class D_DTranscriptionPipeline:
             )
 
             if low_confidence_indices:
-                reprocessed_result = self.reprocess_segments(low_confidence_indices, vocals_path)
-                whisperx_result = self.merge_transcriptions(whisperx_result, reprocessed_result)
+                reprocessed_result = self.reprocess_segments(
+                    low_confidence_indices, vocals_path
+                )
+                whisperx_result = self.merge_transcriptions(
+                    whisperx_result, reprocessed_result
+                )
                 transcription_output = convert_whisperx_output(whisperx_result)
 
         # Step 5: Validate segments with low confidence
@@ -91,14 +100,13 @@ class D_DTranscriptionPipeline:
 
             # Validate if low confidence or contains potential character names
             should_validate = (
-                i in low_confidence_indices or
-                self._might_contain_character_names(segment.text)
+                i in low_confidence_indices
+                or self._might_contain_character_names(segment.text)
             )
 
             if should_validate:
                 corrected_text = self.validator.validate_segment(
-                    segment.text,
-                    context_text.strip()
+                    segment.text, context_text.strip()
                 )
                 segment.text = corrected_text
 
@@ -119,7 +127,9 @@ class D_DTranscriptionPipeline:
 
         return False
 
-    def reprocess_segments(self, indices: list[int], audio_path: Path) -> dict[str, Any]:
+    def reprocess_segments(
+        self, indices: list[int], audio_path: Path
+    ) -> dict[str, Any]:
         """Reprocess specific segments with different parameters.
 
         Args:
@@ -158,7 +168,9 @@ class D_DTranscriptionPipeline:
 
         return {"segments": list(reprocessed_segments.values())}
 
-    def merge_transcriptions(self, original: dict[str, Any], reprocessed: dict[str, Any]) -> dict[str, Any]:
+    def merge_transcriptions(
+        self, original: dict[str, Any], reprocessed: dict[str, Any]
+    ) -> dict[str, Any]:
         """Merge original and reprocessed transcriptions.
 
         Args:
@@ -176,7 +188,7 @@ class D_DTranscriptionPipeline:
             if i in reprocessed_segments:
                 # Choose better confidence score
                 reprocessed_seg = reprocessed_segments[i]
-                if (reprocessed_seg.get("confidence", 0) > segment.get("confidence", 0)):
+                if reprocessed_seg.get("confidence", 0) > segment.get("confidence", 0):
                     merged["segments"][i] = reprocessed_seg
 
         return merged

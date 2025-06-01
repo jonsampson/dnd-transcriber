@@ -5,8 +5,14 @@ from pathlib import Path
 def get_audio_duration(path: Path) -> float:
     """Get audio duration in seconds using ffprobe."""
     cmd = [
-        "ffprobe", "-v", "quiet", "-show_entries", "format=duration",
-        "-of", "csv=p=0", str(path)
+        "ffprobe",
+        "-v",
+        "quiet",
+        "-show_entries",
+        "format=duration",
+        "-of",
+        "csv=p=0",
+        str(path),
     ]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -41,8 +47,18 @@ def split_audio_file(path: Path, chunks: list[tuple[float, float]]) -> list[Path
         output_path = path.parent / f"{path.stem}_chunk_{i:03d}{path.suffix}"
 
         cmd = [
-            "ffmpeg", "-i", str(path), "-ss", str(start), "-t", str(end - start),
-            "-c", "copy", "-avoid_negative_ts", "make_zero", str(output_path)
+            "ffmpeg",
+            "-i",
+            str(path),
+            "-ss",
+            str(start),
+            "-t",
+            str(end - start),
+            "-c",
+            "copy",
+            "-avoid_negative_ts",
+            "make_zero",
+            str(output_path),
         ]
 
         try:

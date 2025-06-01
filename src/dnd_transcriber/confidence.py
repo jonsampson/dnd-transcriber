@@ -1,8 +1,9 @@
-
 from typing import Any
 
 
-def identify_low_confidence_segments(segments: list[Any], threshold: float) -> list[int]:
+def identify_low_confidence_segments(
+    segments: list[Any], threshold: float
+) -> list[int]:
     """Identify segments with confidence below threshold.
 
     Args:
@@ -15,7 +16,7 @@ def identify_low_confidence_segments(segments: list[Any], threshold: float) -> l
     low_confidence_indices = []
 
     for i, segment in enumerate(segments):
-        confidence = getattr(segment, 'confidence', None)
+        confidence = getattr(segment, "confidence", None)
         if confidence is not None and confidence < threshold:
             low_confidence_indices.append(i)
 

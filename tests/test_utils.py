@@ -35,8 +35,8 @@ class TestTimeUtils:
 class TestAudioUtils:
     """Test audio utility functions."""
 
-    @patch('subprocess.run')
-    @patch('pathlib.Path.exists')
+    @patch("subprocess.run")
+    @patch("pathlib.Path.exists")
     def test_validate_audio_format_valid(self, mock_exists, mock_run):
         """Test audio format validation with valid file."""
         mock_exists.return_value = True
@@ -45,7 +45,7 @@ class TestAudioUtils:
 
         assert validate_audio_format(test_path) is True
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_get_audio_duration(self, mock_run):
         """Test audio duration retrieval."""
         mock_run.return_value = MagicMock(stdout="123.45\n")
@@ -63,7 +63,7 @@ class TestModels:
             speaker="TestSpeaker",
             start_time=0.0,
             end_time=5.0,
-            confidence=0.95
+            confidence=0.95,
         )
         assert segment.text == "Test text"
         assert segment.end_time - segment.start_time == 5.0
@@ -76,9 +76,7 @@ class TestModels:
     def test_transcription_output_model(self, sample_segments):
         """Test TranscriptionOutput model with segments."""
         output = TranscriptionOutput(
-            segments=sample_segments,
-            audio_duration=10.0,
-            metadata={"test": "value"}
+            segments=sample_segments, audio_duration=10.0, metadata={"test": "value"}
         )
         assert len(output.segments) == 2
         assert output.audio_duration == 10.0

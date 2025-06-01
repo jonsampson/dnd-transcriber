@@ -42,7 +42,7 @@ class WhisperXTranscriber:
                 self.config.model,
                 device=self.config.device,
                 compute_type=self.config.compute_type,
-                language=self.config.language
+                language=self.config.language,
             )
 
         # Load audio
@@ -58,8 +58,7 @@ class WhisperXTranscriber:
         # Align whisper output
         if self.align_model is None:
             model_a, metadata = whisperx.load_align_model(
-                language_code=result["language"],
-                device=self.config.device
+                language_code=result["language"], device=self.config.device
             )
             self.align_model = model_a
 

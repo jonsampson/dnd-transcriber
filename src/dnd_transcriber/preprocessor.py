@@ -32,7 +32,9 @@ class AudioPreprocessor:
             raise ValueError(f"Invalid audio format: {input_path}")
 
         output_dir = input_path.parent / "separated"
-        vocals_path = output_dir / self.config.model_name / input_path.stem / "vocals.wav"
+        vocals_path = (
+            output_dir / self.config.model_name / input_path.stem / "vocals.wav"
+        )
 
         # Build Demucs command
         cmd = ["python", "-m", "demucs", "--device", self.config.device]
@@ -40,7 +42,9 @@ class AudioPreprocessor:
         if self.config.segment_length:
             cmd.extend(["--segment", str(self.config.segment_length)])
 
-        cmd.extend(["-n", self.config.model_name, "-o", str(output_dir), str(input_path)])
+        cmd.extend(
+            ["-n", self.config.model_name, "-o", str(output_dir), str(input_path)]
+        )
 
         # Run Demucs separation
         try:

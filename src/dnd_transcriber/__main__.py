@@ -3,7 +3,9 @@ import sys
 try:
     from .cli import cli
 except ImportError as e:
-    print(f"Error: Missing dependencies. Please install with 'poetry install'. Details: {e}")
+    print(
+        f"Error: Missing dependencies. Please install with 'poetry install'. Details: {e}"
+    )
     sys.exit(1)
 
 

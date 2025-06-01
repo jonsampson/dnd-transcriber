@@ -18,8 +18,8 @@ class CharacterRoster:
         with open(path) as f:
             data = json.load(f)
 
-        self.characters = data.get('characters', {})
-        self.player_names = data.get('players', [])
+        self.characters = data.get("characters", {})
+        self.player_names = data.get("players", [])
 
     def find_closest_match(self, name: str) -> str:
         """Find closest character name using simple edit distance."""
@@ -35,7 +35,7 @@ class CharacterRoster:
 
         # Simple edit distance check
         best_match = name
-        min_distance = float('inf')
+        min_distance = float("inf")
 
         for char_name in all_names:
             distance = self._edit_distance(name, char_name.lower())
@@ -47,7 +47,7 @@ class CharacterRoster:
 
     def correct_names_in_text(self, text: str) -> str:
         """Correct character names in transcribed text."""
-        words = re.findall(r'\b\w+\b', text)
+        words = re.findall(r"\b\w+\b", text)
         corrected_text = text
 
         for word in words:
@@ -55,8 +55,10 @@ class CharacterRoster:
                 corrected = self.find_closest_match(word)
                 if corrected != word and corrected.lower() != word.lower():
                     # Use word boundaries to avoid partial replacements
-                    pattern = r'\b' + re.escape(word) + r'\b'
-                    corrected_text = re.sub(pattern, corrected, corrected_text, flags=re.IGNORECASE)
+                    pattern = r"\b" + re.escape(word) + r"\b"
+                    corrected_text = re.sub(
+                        pattern, corrected, corrected_text, flags=re.IGNORECASE
+                    )
 
         return corrected_text
 

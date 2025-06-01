@@ -17,7 +17,9 @@ class ContextWindowManager:
         if overlap >= window_size:
             raise ValueError("Overlap must be less than window size")
 
-    def create_windows(self, segments: list[Any]) -> list[tuple[Any, list[Any], list[Any]]]:
+    def create_windows(
+        self, segments: list[Any]
+    ) -> list[tuple[Any, list[Any], list[Any]]]:
         """Create context windows for segments.
 
         Args:
@@ -38,7 +40,7 @@ class ContextWindowManager:
 
             # Calculate context after
             after_end = min(len(segments), i + 1 + self.window_size // 2)
-            context_after = segments[i + 1:after_end]
+            context_after = segments[i + 1 : after_end]
 
             windows.append((segment, context_before, context_after))
 

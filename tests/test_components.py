@@ -105,7 +105,7 @@ class TestConfidenceAnalyzer:
         """Test with segments without confidence scores."""
         segments = [
             Segment(text="Test", speaker="A", start_time=0, end_time=1),
-            Segment(text="Test2", speaker="B", start_time=1, end_time=2)
+            Segment(text="Test2", speaker="B", start_time=1, end_time=2),
         ]
 
         low_indices = identify_low_confidence_segments(segments, threshold=0.7)

@@ -16,12 +16,22 @@ def cli() -> None:
 
 
 @cli.command()
-@click.argument('input_path', type=click.Path(exists=True, path_type=Path))
-@click.argument('output_path', type=click.Path(path_type=Path))
-@click.option('--roster', type=click.Path(exists=True, path_type=Path), help='Character roster JSON file')
-@click.option('--no-multipass', is_flag=True, help='Disable multi-pass processing')
-@click.option('--skip-preprocessing', is_flag=True, help='Skip Demucs audio separation')
-def transcribe(input_path: Path, output_path: Path, roster: Path | None = None, no_multipass: bool = False, skip_preprocessing: bool = False) -> None:
+@click.argument("input_path", type=click.Path(exists=True, path_type=Path))
+@click.argument("output_path", type=click.Path(path_type=Path))
+@click.option(
+    "--roster",
+    type=click.Path(exists=True, path_type=Path),
+    help="Character roster JSON file",
+)
+@click.option("--no-multipass", is_flag=True, help="Disable multi-pass processing")
+@click.option("--skip-preprocessing", is_flag=True, help="Skip Demucs audio separation")
+def transcribe(
+    input_path: Path,
+    output_path: Path,
+    roster: Path | None = None,
+    no_multipass: bool = False,
+    skip_preprocessing: bool = False,
+) -> None:
     """Transcribe audio file using D&D-optimized pipeline."""
 
     # Load configuration from environment
@@ -38,45 +48,51 @@ def transcribe(input_path: Path, output_path: Path, roster: Path | None = None, 
 
     # Process audio
     click.echo(f"Processing audio: {input_path}")
-    result = pipeline.process_audio(input_path, use_multipass=not no_multipass, skip_preprocessing=skip_preprocessing)
+    result = pipeline.process_audio(
+        input_path,
+        use_multipass=not no_multipass,
+        skip_preprocessing=skip_preprocessing,
+    )
 
     # Determine output format from file extension
     output_ext = output_path.suffix.lower()
 
-    if output_ext == '.json':
+    if output_ext == ".json":
         # Export as JSON
         output_data = {
-            'segments': [
+            "segments": [
                 {
-                    'text': seg.text,
-                    'speaker': seg.speaker,
-                    'start_time': seg.start_time,
-                    'end_time': seg.end_time,
-                    'confidence': seg.confidence
+                    "text": seg.text,
+                    "speaker": seg.speaker,
+                    "start_time": seg.start_time,
+                    "end_time": seg.end_time,
+                    "confidence": seg.confidence,
                 }
                 for seg in result.segments
             ],
-            'metadata': result.metadata,
-            'audio_duration': result.audio_duration
+            "metadata": result.metadata,
+            "audio_duration": result.audio_duration,
         }
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(output_data, f, indent=2)
 
-    elif output_ext == '.srt':
+    elif output_ext == ".srt":
         # Export as SRT
         srt_content = export_to_srt(result)
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write(srt_content)
 
     else:
         # Export as plain text (default)
         text_content = export_to_text(result)
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write(text_content)
 
     click.echo(f"Transcription saved to: {output_path}")
-    click.echo(f"Processed {len(result.segments)} segments in {result.audio_duration:.1f} seconds of audio")
+    click.echo(
+        f"Processed {len(result.segments)} segments in {result.audio_duration:.1f} seconds of audio"
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

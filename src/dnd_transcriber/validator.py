@@ -1,4 +1,3 @@
-
 import requests
 
 from .config import OllamaConfig
@@ -41,9 +40,9 @@ class TranscriptionValidator:
                     "model": self.config.model_name,
                     "prompt": prompt,
                     "temperature": self.config.temperature,
-                    "stream": False
+                    "stream": False,
                 },
-                timeout=30
+                timeout=30,
             )
             response.raise_for_status()
 
