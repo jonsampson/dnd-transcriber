@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from .confidence import group_adjacent_segments, identify_low_confidence_segments
+from .confidence import identify_low_confidence_segments
 from .config import PipelineConfig
 from .context import ContextWindowManager
 from .formatter import convert_whisperx_output
@@ -9,7 +9,6 @@ from .models import TranscriptionOutput
 from .preprocessor import AudioPreprocessor
 from .roster import CharacterRoster
 from .transcriber import WhisperXTranscriber
-from .utils.audio import split_audio_file
 from .validator import TranscriptionValidator
 
 
@@ -25,6 +24,7 @@ class D_DTranscriptionPipeline:
         self.preprocessor = AudioPreprocessor(config.demucs)
         self.transcriber = WhisperXTranscriber(config.whisperx)
         self.validator = TranscriptionValidator(config.ollama, roster)
+        self.validator.transcriber = self.transcriber  # Pass transcriber reference
         self.context_manager = ContextWindowManager(window_size=5, overlap=1)
 
     def process_audio(
@@ -37,7 +37,7 @@ class D_DTranscriptionPipeline:
 
         Args:
             input_path: Path to input audio file
-            use_multipass: Whether to use multi-pass processing for low confidence segments
+            use_multipass: Enable retranscription for segments that don't fit context (recommended)
             skip_preprocessing: Whether to skip Demucs audio separation
 
         Returns:
@@ -57,37 +57,33 @@ class D_DTranscriptionPipeline:
         # Step 3: Convert to structured format
         transcription_output = convert_whisperx_output(whisperx_result)
 
-        # Step 4: Multi-pass processing if enabled
+        # Step 4: Multi-pass processing is now handled per-segment in validation
         if use_multipass:
-            print("🔍 Analyzing segment confidence scores...")
-            low_confidence_indices = identify_low_confidence_segments(
-                transcription_output.segments, threshold=0.6
+            print(
+                "🔍 Multi-pass processing enabled (handled per-segment in validation)"
             )
-
-            if low_confidence_indices:
-                print(
-                    f"🔄 Reprocessing {len(low_confidence_indices)} low-confidence segments..."
-                )
-                reprocessed_result = self.reprocess_segments(
-                    low_confidence_indices, vocals_path
-                )
-                whisperx_result = self.merge_transcriptions(
-                    whisperx_result, reprocessed_result
-                )
-                transcription_output = convert_whisperx_output(whisperx_result)
-            else:
-                print("✅ All segments have good confidence scores")
+        else:
+            print("⏭️  Multi-pass processing disabled")
 
         # Step 5: Validate segments with low confidence
         print("🔍 Identifying segments for LLM validation...")
-        validated_segments = self._validate_segments(transcription_output.segments)
+        validated_segments = self._validate_segments(
+            transcription_output.segments, vocals_path, use_multipass
+        )
 
         # Step 6: Update transcription with validated segments
         transcription_output.segments = validated_segments
 
+        # Step 7: Remove any duplicate or overlapping segments
+        transcription_output.segments = self._deduplicate_segments(
+            transcription_output.segments
+        )
+
         return transcription_output
 
-    def _validate_segments(self, segments: list[Any]) -> list[Any]:
+    def _validate_segments(
+        self, segments: list[Any], audio_path: Path, use_retranscription: bool = True
+    ) -> list[Any]:
         """Validate transcription segments using LLM."""
         # Identify low confidence segments
         low_confidence_indices = identify_low_confidence_segments(
@@ -101,12 +97,17 @@ class D_DTranscriptionPipeline:
         validation_count = 0
 
         for i, (segment, context_before, context_after) in enumerate(context_windows):
-            # Build context string
+            # Build context string with comprehensive context
             context_text = ""
             if context_before:
-                context_text += " ".join([seg.text for seg in context_before[-2:]])
+                # Include more context (up to 10 previous segments) for better analysis
+                context_segments = [seg.text for seg in context_before[-10:]]
+                context_text = " ".join(context_segments)
             if context_after:
-                context_text += " " + " ".join([seg.text for seg in context_after[:2]])
+                # Include fewer future segments to avoid spoilers
+                future_segments = [seg.text for seg in context_after[:2]]
+                if future_segments:
+                    context_text += " " + " ".join(future_segments)
 
             # Validate if low confidence or contains potential character names
             should_validate = (
@@ -118,7 +119,16 @@ class D_DTranscriptionPipeline:
                 validation_count += 1
                 print(f"📝 Segment {validation_count}: {i+1}/{len(segments)}")
                 corrected_text = self.validator.validate_segment(
-                    segment.text, context_text.strip()
+                    segment.text,
+                    context_text.strip(),
+                    audio_path=audio_path if use_retranscription else None,
+                    start_time=getattr(segment, "start_time", None)
+                    if use_retranscription
+                    else None,
+                    end_time=getattr(segment, "end_time", None)
+                    if use_retranscription
+                    else None,
+                    original_confidence=getattr(segment, "confidence", None),
                 )
                 segment.text = corrected_text
 
@@ -144,68 +154,86 @@ class D_DTranscriptionPipeline:
 
         return False
 
-    def reprocess_segments(
-        self, indices: list[int], audio_path: Path
-    ) -> dict[str, Any]:
-        """Reprocess specific segments with different parameters.
+    def _deduplicate_segments(self, segments: list[Any]) -> list[Any]:
+        """Remove duplicate or overlapping segments.
 
         Args:
-            indices: List of segment indices to reprocess
-            audio_path: Path to processed audio file
+            segments: List of transcription segments
 
         Returns:
-            Reprocessed WhisperX result
+            Deduplicated segments sorted by start time
         """
-        # Group adjacent segments for batch processing
-        segment_groups = group_adjacent_segments(indices)
+        if not segments:
+            return segments
 
-        reprocessed_segments = {}
+        print("🧹 Checking for duplicate segments...")
 
-        for group in segment_groups:
-            start_idx, end_idx = group[0], group[-1] + 1
+        # Sort segments by start time
+        sorted_segments = sorted(
+            segments, key=lambda seg: getattr(seg, "start_time", 0)
+        )
 
-            # Create time chunks for audio splitting
-            # Note: This is a simplified approach, would need actual timing data
-            start_time = start_idx * 30  # Assume 30-second segments
-            end_time = end_idx * 30
+        deduplicated = []
+        prev_segment = None
+        duplicates_removed = 0
 
-            chunks = [(float(start_time), float(end_time))]
-            chunk_paths = split_audio_file(audio_path, chunks)
+        for segment in sorted_segments:
+            if prev_segment is None:
+                deduplicated.append(segment)
+                prev_segment = segment
+                continue
 
-            if chunk_paths:
-                chunk_result = self.transcriber.transcribe(chunk_paths[0])
+            # Check for duplicates by comparing text content and timing
+            current_text = getattr(segment, "text", "").strip()
+            prev_text = getattr(prev_segment, "text", "").strip()
+            current_start = getattr(segment, "start_time", 0)
+            prev_start = getattr(prev_segment, "start_time", 0)
+            current_end = getattr(segment, "end_time", 0)
+            prev_end = getattr(prev_segment, "end_time", 0)
 
-                # Map results back to original indices
-                for i, segment in enumerate(chunk_result.get("segments", [])):
-                    if start_idx + i in indices:
-                        reprocessed_segments[start_idx + i] = segment
+            # Check for exact text duplicates
+            if current_text == prev_text:
+                print(f"   🗑️  Removing exact duplicate: {current_text[:50]}")
+                duplicates_removed += 1
+                continue
 
-                # Clean up temporary chunk
-                chunk_paths[0].unlink(missing_ok=True)
+            # Check for overlapping time ranges with similar content
+            time_overlap = (
+                current_start < prev_end
+                and current_end > prev_start
+                and abs(current_start - prev_start) < 5.0  # Within 5 seconds
+            )
 
-        return {"segments": list(reprocessed_segments.values())}
+            if time_overlap and len(current_text) > 0 and len(prev_text) > 0:
+                # Check if one text contains the other (partial overlap)
+                if current_text in prev_text or prev_text in current_text:
+                    # Keep the longer, more complete text
+                    if len(current_text) > len(prev_text):
+                        print("   🔄 Replacing shorter segment with longer version")
+                        deduplicated[-1] = segment  # Replace previous with current
+                        prev_segment = segment
+                    else:
+                        print("   🗑️  Removing shorter overlapping segment")
+                        duplicates_removed += 1
+                    continue
 
-    def merge_transcriptions(
-        self, original: dict[str, Any], reprocessed: dict[str, Any]
-    ) -> dict[str, Any]:
-        """Merge original and reprocessed transcriptions.
+            # Check for segments that are obvious repetitions
+            words_current = current_text.split()
+            words_prev = prev_text.split()
+            if len(words_current) > 3 and len(words_prev) > 3:
+                # Check if first few words are the same (likely repetition)
+                if words_current[:3] == words_prev[:3]:
+                    print(f"   🗑️  Removing likely repetition: {current_text[:50]}")
+                    duplicates_removed += 1
+                    continue
 
-        Args:
-            original: Original WhisperX result
-            reprocessed: Reprocessed segments result
+            # Keep this segment
+            deduplicated.append(segment)
+            prev_segment = segment
 
-        Returns:
-            Merged transcription result
-        """
-        merged = original.copy()
-        reprocessed_segments = dict(enumerate(reprocessed.get("segments", [])))
+        if duplicates_removed > 0:
+            print(f"✅ Removed {duplicates_removed} duplicate/overlapping segments")
+        else:
+            print("✅ No duplicates found")
 
-        # Replace segments that were reprocessed
-        for i, segment in enumerate(merged.get("segments", [])):
-            if i in reprocessed_segments:
-                # Choose better confidence score
-                reprocessed_seg = reprocessed_segments[i]
-                if reprocessed_seg.get("confidence", 0) > segment.get("confidence", 0):
-                    merged["segments"][i] = reprocessed_seg
-
-        return merged
+        return deduplicated

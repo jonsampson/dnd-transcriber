@@ -1,12 +1,29 @@
 {
   "characters": {
-    "Egeria": "half-elf",
-    "Orenzo": "tiefling",
-    "Miri": "human"
+    "Egeria (preferred) or Gee or Gee Gee": "half-elf druid",
+    "Orenzo (preferred) or Renzo": "tiefling thief/paladin, in love with Umberlee",
+    "Miri (preferred) or Mirielle": "human ranger",
+    "Rowland or Row": "human barbarian",
+    "Merit": "halfling bard",
+    "Umberlee": "Goddess of the Ocean",
+    "Fennick": "vampire",
+    "Devilion": "Orenzo's mother",
+    "Karlilliah": "tiefling",
+    "Barabbas": "human ranger, Miri's adopted father",
+    "Liir": "druid, Egeria's husband",
+    "Early": "human, Ninah's mother and Orenzo's childhood defender",
+    "Ninah": "human, Orenzo's childhood friend",
+    "Sterling": "Miri's love interest",
+    "Gongowyr": "City",
+    "Paddock": "half-elf thief",
+    "Jhallavayle": "Sounds like Halla-vale"
   },
   "players": [
     "Talia",
     "Jon",
-    "Lisa"
+    "Lisa",
+    "DM/Hannah",
+    "Vince",
+    "Caroline"
   ]
 }
