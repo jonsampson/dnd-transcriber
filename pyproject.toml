@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "dnd-transcriber"
+version = "0.1.0"
+description = "LLM-Enhanced WhisperX Pipeline for D&D Session Transcription"
+authors = ["jonsampson"]
+readme = "README.md"
+packages = [{include = "dnd_transcriber", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+pydantic = "^2.0.0"
+click = "^8.0.0"
+python-dotenv = "^1.0.0"
+requests = "^2.31.0"
+
+[tool.poetry.group.ml.dependencies]
+whisperx = {git = "https://github.com/m-bain/whisperX"}
+torch = {version = "^2.0.0", source = "pytorch"}
+torchaudio = {version = "^2.0.0", source = "pytorch"}
+ollama = "^0.3.0"
+demucs = "^4.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0.0"
+black = "^23.0.0"
+ruff = "^0.1.0"
+mypy = "^1.0.0"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
