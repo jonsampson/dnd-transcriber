@@ -49,7 +49,7 @@ class WhisperXTranscriber:
         audio = whisperx.load_audio(str(audio_path))
 
         # Transcribe
-        result = self.model.transcribe(audio, batch_size=16)
+        result = self.model.transcribe(audio, batch_size=16)  # type: ignore
 
         # Add audio duration to result
         result["duration"] = get_audio_duration(audio_path)
@@ -63,6 +63,6 @@ class WhisperXTranscriber:
             )
             self.align_model = model_a
 
-        result = whisperx.align(result["segments"], self.align_model, metadata, audio, self.config.device, return_char_alignments=False)
+        result = whisperx.align(result["segments"], self.align_model, metadata, audio, self.config.device, return_char_alignments=False)  # type: ignore
 
-        return result
+        return result  # type: ignore[no-any-return]

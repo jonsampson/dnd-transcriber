@@ -33,7 +33,7 @@ def validate_audio_format(path: Path) -> bool:
         return False
 
 
-def split_audio_file(path: Path, chunks: list) -> list[Path]:
+def split_audio_file(path: Path, chunks: list[tuple[float, float]]) -> list[Path]:
     """Split audio file into chunks. chunks = [(start_seconds, end_seconds), ...]"""
     output_paths = []
 

@@ -69,7 +69,7 @@ class D_DTranscriptionPipeline:
 
         return transcription_output
 
-    def _validate_segments(self, segments: list) -> list:
+    def _validate_segments(self, segments: list[Any]) -> list[Any]:
         """Validate transcription segments using LLM."""
         # Identify low confidence segments
         low_confidence_indices = identify_low_confidence_segments(
@@ -142,7 +142,7 @@ class D_DTranscriptionPipeline:
             start_time = start_idx * 30  # Assume 30-second segments
             end_time = end_idx * 30
 
-            chunks = [(start_time, end_time)]
+            chunks = [(float(start_time), float(end_time))]
             chunk_paths = split_audio_file(audio_path, chunks)
 
             if chunk_paths:

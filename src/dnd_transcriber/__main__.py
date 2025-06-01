@@ -7,7 +7,7 @@ except ImportError as e:
     sys.exit(1)
 
 
-def main():
+def main() -> None:
     """Main entry point for the D&D transcriber package."""
     try:
         cli()

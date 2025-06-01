@@ -1,8 +1,10 @@
+from typing import Any
+
 from .models import Segment, TranscriptionOutput
 from .utils.time import seconds_to_readable, seconds_to_srt_time
 
 
-def convert_whisperx_output(whisperx_data: dict) -> TranscriptionOutput:
+def convert_whisperx_output(whisperx_data: dict[str, Any]) -> TranscriptionOutput:
     """Convert WhisperX output dictionary to TranscriptionOutput model."""
     segments = []
 

@@ -1,6 +1,8 @@
 
+from typing import Any
 
-def identify_low_confidence_segments(segments: list, threshold: float) -> list[int]:
+
+def identify_low_confidence_segments(segments: list[Any], threshold: float) -> list[int]:
     """Identify segments with confidence below threshold.
 
     Args:

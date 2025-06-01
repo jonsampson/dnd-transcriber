@@ -10,7 +10,7 @@ from .roster import CharacterRoster
 
 
 @click.group()
-def cli():
+def cli() -> None:
     """D&D Transcription Pipeline CLI."""
     pass
 
@@ -21,7 +21,7 @@ def cli():
 @click.option('--roster', type=click.Path(exists=True, path_type=Path), help='Character roster JSON file')
 @click.option('--no-multipass', is_flag=True, help='Disable multi-pass processing')
 @click.option('--skip-preprocessing', is_flag=True, help='Skip Demucs audio separation')
-def transcribe(input_path: Path, output_path: Path, roster: Path = None, no_multipass: bool = False, skip_preprocessing: bool = False):
+def transcribe(input_path: Path, output_path: Path, roster: Path | None = None, no_multipass: bool = False, skip_preprocessing: bool = False) -> None:
     """Transcribe audio file using D&D-optimized pipeline."""
 
     # Load configuration from environment

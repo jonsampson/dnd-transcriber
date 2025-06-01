@@ -6,7 +6,7 @@ from pathlib import Path
 class CharacterRoster:
     """Manages character names for D&D session transcription."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.characters: dict[str, str] = {}  # canonical_name -> variations
         self.player_names: list[str] = []
 

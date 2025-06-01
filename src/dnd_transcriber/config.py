@@ -14,13 +14,13 @@ class WhisperXConfig(BaseModel):
     language: str | None = Field(default=None, description="Audio language")
 
     @validator("device")
-    def validate_device(cls, v):
+    def validate_device(cls, v: str) -> str:
         if v not in ["cuda", "cpu", "auto"]:
             raise ValueError("Device must be 'cuda', 'cpu', or 'auto'")
         return v
 
     @validator("compute_type")
-    def validate_compute_type(cls, v):
+    def validate_compute_type(cls, v: str) -> str:
         if v not in ["float16", "int8", "int8_float16"]:
             raise ValueError("Compute type must be 'float16', 'int8', or 'int8_float16'")
         return v
@@ -43,7 +43,7 @@ class DemucsConfig(BaseModel):
     segment_length: int | None = Field(default=None, description="Segment length in seconds")
 
     @validator("device")
-    def validate_device(cls, v):
+    def validate_device(cls, v: str) -> str:
         if v not in ["cuda", "cpu", "auto"]:
             raise ValueError("Device must be 'cuda', 'cpu', or 'auto'")
         return v
@@ -57,13 +57,13 @@ class PipelineConfig(BaseModel):
     output_format: str = Field(default="json", description="Output format")
 
     @validator("output_format")
-    def validate_output_format(cls, v):
+    def validate_output_format(cls, v: str) -> str:
         if v not in ["json", "srt", "txt"]:
             raise ValueError("Output format must be 'json', 'srt', or 'txt'")
         return v
 
     @classmethod
-    def from_env(cls):
+    def from_env(cls) -> "PipelineConfig":
         """Load configuration from environment variables."""
         return cls(
             whisperx=WhisperXConfig(
@@ -80,7 +80,7 @@ class PipelineConfig(BaseModel):
             demucs=DemucsConfig(
                 model_name=os.getenv("DEMUCS_MODEL", "htdemucs"),
                 device=os.getenv("DEMUCS_DEVICE", "cuda"),
-                segment_length=int(os.getenv("DEMUCS_SEGMENT_LENGTH")) if os.getenv("DEMUCS_SEGMENT_LENGTH") else None
+                segment_length=int(seg_len) if (seg_len := os.getenv("DEMUCS_SEGMENT_LENGTH")) is not None else None
             ),
             output_format=os.getenv("OUTPUT_FORMAT", "json")
         )
